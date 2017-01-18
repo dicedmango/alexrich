@@ -22,6 +22,7 @@
 
     <script type="text/javascript" src="./libs/rainbow-custom.min.js"></script>
     <script src="./libs/language/css.js"></script>
+	<link href="css/monokai.css" rel="stylesheet" type="text/css">
 
 	<title>Alex Richardson Ba3</title>
 
@@ -203,7 +204,188 @@ People who would use Forage inherently like food. To find an audience of people 
 						<p>To see the development of the app and design process please <a href="http://foragepro.s3-website-eu-west-1.amazonaws.com/" target="_blank">Click Here!</a></p><br><br>
 						
 					
+<h2 class="work-title blog-title">Javascript</h2>
+
+<p>NodeJS Server using express</p>
+<pre class="code-pre" style="text-align: left;"><code data-language="JavaScript">
+const PORT=1337; // hacker humour
+
+var express = require('express');
+var fs = require('fs');
+var bodyParser = require('body-parser');
+var _ = require('underscore');
+
+var app = express();
+
+app.use(express.static('./'));
+
+
+
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+
+
+var recipes = JSON.parse(fs.readFileSync('savedRecepies.json', 'utf8'));
+var users = JSON.parse(fs.readFileSync('users.json', 'utf8'));
+
+// give all the recepies unique ID's
+recipes.forEach(function(d,i) {
+	d.id = i;
+});
+
+// get all users
+app.get('/api/users', function (req, res) {
+	res.send(users);
+});
+
+// get all recepies
+app.get('/api/recipes', function (req, res) {
+	res.send(recipes);
+});
+
+
+app.post('/api/add', function (req, res) {
+
+	// add to list of recepies
+	console.log('req.query', req.body);
+
+	var newRecepie = {
+		name: req.body.name,
+		id: recipes.length,
+		description: req.body.name,
+		Method: req.body.method,
+		Ingredients: req.body.ingredients,
+		ingredients: req.body.ingredients,
+		img:"http://cdn.jamieoliver.com/recipe-database/430_575/5XX_hHV_KoJAQKEJEgl8-E.jpg"
+	}
+
+	recipes.push(newRecepie);
+
+	var json = JSON.stringify(recipes);
+
+	fs.writeFile('savedRecepies.json', json, 'utf8', function() {
+		console.log("successfully written to file");
+	});
+
+	res.send('successfully added a recepie')
+});
+
+// get single recepie by id
+app.get('/api/recipe', function (req, res) {
+
+	console.log('req.query', req.query);
+	res.send([recipes[req.query.id]]);
+});
+
+app.get('/api/user', function (req, res) {
+
+	console.log('user req.query', req.query);
+
+	var user = _.findWhere(users, { username: req.query.username });
+
+	res.send(user);
+});
+
+
+server = app.listen(PORT);
+
+var host = server.address().address
+var port = server.address().port
+
+console.log("forage angular server listening on port %s", port);
+</code></pre><br><br>
+
+
+<p>Angular routeProvider module for AngularJS assigning templates and javascript controllers to different pages</p>
+<pre class="code-pre" style="text-align: left;"><code data-language="JavaScript">
+
+var app = angular.module('app', ['ngRoute', 'ngAnimate'])
+.config( ['$routeProvider', function($routeProvider) {
+	$routeProvider
+		.when('/', { 
+			templateUrl: 'templates/index.html', 
+			controller: 'defaultCtrl' 
+		})
+		.when('/login', { 
+			templateUrl: 'templates/login.html', 
+			controller: 'LoginCtrl' }
+		)	
+		.when('/rate', { 
+			templateUrl: 'templates/rate.html' 
+		})
+		.when('/recipe', { 
+			templateUrl: 'templates/recipe.html', 
+			controller: 'RecipeCtrl' 
+		})
+		.when('/rec', { 
+			redirectTo: '/recipe' 
+		})
+		.when('/add', { 
+			templateUrl: 'templates/add.html' 
+		})
+		.when('/about', { 
+			templateUrl: 'templates/about.html' 
+		})
+		.when('/search', { 
+			templateUrl: 'templates/search.html', 
+			controller: 'SearchCtrl' 
+		})
+		.when('/cookies', { 
+			templateUrl: 'templates/cookies.html', 
+			controller: 'CookieCtrl' 
+		})
+		.when('/duk', { 
+			templateUrl: 'templates/duk.html', 
+			controller: 'DUKCtrl' 
+		})
+		.when('/user', { 
+			templateUrl: 'templates/user.html', 
+			controller: 'UserCtrl' 
+		})
+		.when('/tools', { 
+			templateUrl: 'templates/tools2.html' 
+		})
+		.otherwise({ redirectTo: '/' });
+}]);
+
+</code></pre><br><br>
+
+
+<p>Angular controller to get a recepie from the REST api described above in the server.</p>
+<pre class="code-pre" style="text-align: left;"><code data-language="JavaScript">
+
+
+
+
+
+
+app.controller('RecipeCtrl', ['$scope', '$rootScope', '$http', '$location', function($s, $rootScope, $http, $location) {
+
+	$rootScope.headerHidden = false;
+
+	$s.pageClass = 'recipe-page';
+	$s.currentRecepie = {};
+
+    $.get('/api/recipe?id='+getParameterByName('id'), function(data) {
+
+		console.log("recipe", data);
+		if(!data || !data[0] || data.length == 0) return;
+
+		$s.currentRecepie = data[0];
+
+		setTimeout(function() { $s.$apply() }, 50);
+    });
+}]);
+</code></pre>
+
+
 				</div>
+
+
+
+
 
 			</li>
 
@@ -219,7 +401,6 @@ People who would use Forage inherently like food. To find an audience of people 
 
 				<div class="cd-project-info">
 
-				
 
 				<h2 class="work-title blog-title">Agile Aging</h2>
 				
